@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>TASK32</title>
+	<meta charset='utf-8'/>
+	<script src='../../jquery-3.1.1.min.js'></script>
+	<link rel="stylesheet" href="style32.css">
+</head>
+<body>
+	<aside id="form_data_set">
+		<form id="data_create">
+			<fieldset class="input" id="type_box">
+				<legend>类型</legend>
+
+				<input type="radio" id="input" name="num-type" checked>
+				<label for="text">输入框</label>
+
+				<input type="radio" id="radio" name="num-type">
+				<label for="radio">单选框</label>
+
+				<input type="radio" id="checkbox" name="num-type">
+				<label for="checkbox">多选框</label>
+
+				<input type="radio" id="select" name="num-type">
+				<label for="select">下拉框</label>
+
+				<input type="radio" id="textarea" name="num-type">
+				<label for="textarea">文本框</label>
+			</fieldset>
+			<fieldset id="basic_box" class="necessary">
+				<legend>配置</legend>
+
+				<label for="">名称：</label>
+				<input type="text" id="type_name" value="类型">
+
+				<input type="radio" id="necessary" name="num-necessary" checked>
+				<label for="necessary">必选</label>
+
+				<input type="radio" id="unnecessary" name="num-necessary">
+				<label for="unnecessary">选填</label>
+				
+				<label for="select_box">样式</label>
+				<select id="select_box">
+					<option>样式一</option>
+					<option>样式二</option>
+				</select>
+			</fieldset>
+			<fieldset id="rule_input" class="text">
+				<legend>规则</legend>
+
+				<input type="radio" id="text" name="num-rule" checked>
+				<label for="text">文字</label>
+
+				<input type="radio" id="number" name="num-rule">
+				<label for="number">数字</label>
+
+				<input type="radio" id="email" name="num-rule">
+				<label for="email">邮箱</label>
+
+				<input type="radio" id="phone" name="num-rule">
+				<label for="phone">电话号码</label>
+
+				<input type="radio" id="password" name="num-rule">
+				<label for="password">密码</label>
+			</fieldset>
+			<fieldset id="item_box">
+				<legend>选项</legend>
+
+				<input type="text" id="item_box_input" placeholder="可用空格，逗号，回车来分隔选项">
+				<div id="item_box_show"></div>
+			</fieldset>
+			<fieldset id="control_length">
+				<legend>长度限制</legend>
+
+				<label>字符范围:</label>
+				<input type="number" id="min_length" min=0 value="4">
+				<span>--</span>
+				<input type="number" id="max_length" min=1 value="16">
+			</fieldset>
+			<button id="add_btn" type="button">add</button>
+		</form>
+	</aside>
+	<div id="form_box">
+			<h1 id="title">表单展示区</h1>
+			<form id="result" class="style1">
+				<button id="submit_form" type="button">提交</button>
+
+			</form>
+		</div>
+	<script src="formModule32.js"></script>
+	<script src="showTagModule32.js"></script>
+	<script src="dataproductModule32.js"></script>
+	<script src="app32.js"></script>
+</body>
+</html>

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset='utf-8'/>
+	<script src='jquery-3.1.1.min.js'></script>
+	<style>
+	* {
+    font-family: arial, sans-serif;
+}
+
+		.container {
+    margin: 0 auto;
+    border: 1px solid #000;
+    width: 1100px;
+    height: 950px;
+    padding-bottom: 2px;
+}
+
+.gamepad {
+    position:relative; 
+    float: left;
+    margin: 0 auto;
+    width: 800px;
+    height: 100%;
+}
+		#screen, #background {
+    width: 100%;
+    height: 800px;
+    left:0px;
+}
+
+#background {
+			width:100%;
+			background-color:#cecece;
+			height:800px;
+			z-index:1;
+            left:0;
+		}
+		#screen {
+			width:100%;
+			height:800px;
+			position:absolute;
+			z-index:10;
+			left:0;
+			background:transparent;
+			top:0px;
+		}
+		.btn {
+    display: inline-block;
+    border: 1px solid #666;
+    border-radius: 2px;
+    padding: 2px 3px;
+    min-width: 60px;
+    text-align: center;
+    color: #999;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+.btn:hover{
+    border: 1px solid #000;
+    color: #000;
+}
+		ul {
+			list-style:none;
+            margin:0;
+            padding-left:10px;
+		}
+		.console {
+			float:left;
+			width:300px;
+			height:950px;
+			overflow:scroll;
+		}
+        .wraper {
+        	margin-bottom:5px;
+        }
+        
+.console ul > li {
+    margin-bottom: 10px;
+    font-size: .8em;
+    line-height: 1;
+}
+        .name {
+        	text-transform: capitalize;
+        }
+        .console h2 {
+        	text-align:center;
+        }
+	</style>
+</head>
+<body>
+      <div class="container">
+      	<div id='console' class="console">
+      		<h2>Console Log</h2>
+      		<ul></ul>
+      	</div>
+      	<div class="gamepad">
+      		<canvas id="background"></canvas>
+      		<canvas id="screen"></canvas>
+	      	<form action="">
+	      		<filedset>
+	      			<legend>Console Log</legend>
+	      			<ul>
+	      				<li class="wraper">
+	      					<span class="name">spaceship No.1</span>
+	      					<div class="btn" name='luanch'>luanch</div>
+	      					<div class="btn" name='fly'>fly</div>
+	      					<div class="btn" name='stop'>stop</div>
+	      					<div class="btn" name='destroy'>destroy</div>
+	      				</li>
+	      				<li class="wraper">
+	      					<span class="name">spaceship No.2</span>
+	      					<div class="btn" name='luanch'>luanch</div>
+	      					<div class="btn" name='fly'>fly</div>
+	      					<div class="btn" name='stop'>stop</div>
+	      					<div class="btn" name='destroy'>destroy</div>
+	      				</li>
+	      				<li class="wraper"><span class="name">spaceship No.3</span>
+	      					<div class="btn" name='luanch'>luanch</div>
+	      					<div class="btn" name='fly'>fly</div>
+	      					<div class="btn" name='stop'>stop</div>
+	      					<div class="btn" name='destroy'>destroy</div></li>
+	      				<li class="wraper">
+	      					<span class="name">spaceship No.4</span>
+	      					<div class="btn" name='luanch'>luanch</div>
+	      					<div class="btn" name='fly'>fly</div>
+	      					<div class="btn" name='stop'>stop</div>
+	      					<div class="btn" name='destroy'>destroy</div>
+	      				</li>
+	      			</ul>
+	      		</filedset>
+	      	</form>
+      	</div>
+      </div>
+      <script>
+      	(function(){
+      		var SPACESHIP_SPEED = 2;
+      		var SPACESHIP_SIZE = 40;
+      		var SPACESHIP_COUNT = 4;
+      		var DEFAULT_CHANGE_RATE = 0.3;
+      		var DEFAULT_DISCHANGE_RATE = 0.2;
+      		var POWERBAR_POS_OFFSET = 5;
+      		var POWERBAR_COLOR_GOOD = "#70ed3f"; //电量良好状态颜色
+    var POWERBAR_COLOR_MEDIUM = "#fccd1f"; //电量一般状态颜色
+    var POWERBAR_COLOR_BAD = "#fb0000"; //电量差状态颜色
+    var POWERBAR_WIDTH = 5; //电量条宽度
+
+    var SCREEN_WIDTH = 800; //屏幕宽度
+    var SCREEN_HEIGHT = 800; //屏幕高度
+    var SCREEN_CENTER_X = SCREEN_WIDTH / 2; //屏幕X轴中心坐标
+    var SCREEN_CENTER_Y = SCREEN_HEIGHT / 2; //屏幕Y轴中心坐标
+
+    var PLANET_RADIUS = 50; //行星半径
+    var ORBIT_COUNT = 4; //轨道数量
+    var FAILURE_RATE = 0.3; //消息发送失败率
+
+    //根据浏览器类型设置相应的requestAnimationFrame
+    requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+
+      		var Spaceship = function(id){
+      			this.id = id;
+      			this.power = 100;
+      			this.currState = 'stop';
+      			this.mediator = null;
+      			this.orbit = 100 + 50 * id - SPACESHIP_SIZE / 2;
+      			this.deg = 0;
+      			
+      		};
+      		Spaceship.prototype.dynamicManager = function(){
+      			var self = this;
+      			var fly  = function(){
+      				self.timer = setInterval(function(){
+      					self.deg += SPACESHIP_SPEED;
+      					if(self.deg >= 360)
+      						self.deg = 0;
+      				},20);
+      				ConsoleUtil.show('Spaceship No.' + self.id + 'is flying.');
+      			};
+      			var stop = function(){
+      				clearInterval(self.timer);
+      				ConsoleUtil.show('Spaceship No.' + self.id + 'has stop');
+      			};
+      			return {
+      				fly : fly,
+      				stop : stop
+      			};
+      		};
+      		Spaceship.prototype.powerManager = function(){
+      			var self = this;
+      			var charge = function(){
+      				var chargeRate = DEFAULT_CHANGE_RATE;
+      				var timer = setInterval(function(){
+      					if(self.currState == 'fly' || self.currState == 'destroy'){
+      						clearInterval(timer);
+      						return false;
+      					}
+      					if(self.power >= 100){
+      						clearInterval(timer);
+      						self.power = 100;
+      						return false;
+      					}
+      					self.power += chargeRate;
+      					return true;
+      				},20);
+      				ConsoleUtil.show('Spaceship No.' + self.id + 'is charging.');
+      			};
+      			var discharge = function(){
+      				var dischargeRate = DEFAULT_DISCHANGE_RATE;
+      				var timer = setInterval(function(){
+      					if(self.currState == 'stop' || self.currState == 'destroy'){
+      						clearInterval(timer);
+      						return false;
+      					}
+      					if(self.power <= 0){
+      						clearInterval(timer);
+      						self.power = 0;
+      						self.stateManager().changeState('stop');
+      						return false;
+      					}
+      					self.power -= dischargeRate;
+      				},20);
+      				ConsoleUtil.show('Spaceship No.' + self.id + 'is dischaging.');
+      			};
+      			return {
+      				charge : charge,
+      				discharge : discharge
+      			};
+      		};
+      		Spaceship.prototype.stateManager = function(){
+      			var self = this;
+      			var states = {
+      				fly : function(state){
+      					self.currState = 'fly';
+      					self.dynamicManager().fly();
+      					self.powerManager().discharge();
+      				},
+      				stop : function(state){
+      					self.currState = 'stop';
+      					self.dynamicManager().stop();
+      					self.powerManager().charge();
+      				},
+      				destroy : function(state){
+      					self.currState = 'destroy';
+      					self.mediator.remove(self);
+      				}
+      			};
+      			var changeState = function(state){
+      				states[state] && states[state]();
+      				ConsoleUtil.show('Spaceship No.' + self.id + 'state is' + state);
+      			};
+      			return {
+      				changeState : changeState
+      			};
+      		};
+      		Spaceship.prototype.signalManager = function(){
+      			var self = this;
+      			return {
+      				receive : function(msg,from){
+      					if(self.currState != msg.cmd && self.id == msg.id){
+      						self.stateManager().changeState(msg.cmd);
+      					}
+      				}
+      			};
+      		};
+      		var AnimUtil = (function(){
+      			var canvas = document.getElementById('screen');
+      			canvas.width = SCREEN_WIDTH;
+      			canvas.height = SCREEN_HEIGHT;
+      			var ctx = canvas.getContext('2d');
+
+      			var cacheCanvas = document.createElement('canvas');
+      			cacheCanvas.width = SCREEN_WIDTH;
+      			cacheCanvas.height = SCREEN_HEIGHT;
+      			var cacheCtx = cacheCanvas.getContext('2d');
+      		
+      			var mediator = null;
+      			var drawPlanet = function(_ctx){
+      				var x = SCREEN_CENTER_X - PLANET_RADIUS;
+      				var y = SCREEN_CENTER_Y - PLANET_RADIUS;
+      				var planet = new Image();
+      				planet.src = 'min-iconfont-planet.png';
+      				planet.onload = function(){
+      					_ctx.drawImage(planet,x,y,PLANET_RADIUS*2,PLANET_RADIUS*2);
+      				};
+      			};
+      			var drawOrbit = function(_ctx){
+      				for(var i = 0;i < ORBIT_COUNT;i++){
+      					_ctx.strokeStyle = '#999';
+      					_ctx.beginPath();
+      					_ctx.arc(SCREEN_CENTER_X,SCREEN_CENTER_Y,100 + 50 * i,0,2 * Math.PI);
+      					_ctx.closePath();
+      					_ctx.stroke();
+      				}
+      			};
+      			(function(){
+      				var canvas = document.getElementById('background');
+      				canvas.width = SCREEN_WIDTH;
+                    canvas.height = SCREEN_HEIGHT;
+                    var _ctx = canvas.getContext('2d');
+                    _ctx.clearRect(0,0,SCREEN_WIDTH,SCREEN_HEIGHT);
+                    drawPlanet(_ctx);
+                    drawOrbit(_ctx);
+      			})();
+      			var drawSpaceship = function(_ctx,spaceship){
+      				var spaceshipImg = new Image();
+      				spaceshipImg.src = 'min-iconfont-rocket-active.png';
+      				spaceshipImg.onload = function(){
+      					try {
+      						_ctx.save();
+      						_ctx.translate(SCREEN_CENTER_X,SCREEN_CENTER_Y);
+      						_ctx.rotate(-spaceship.deg*Math.PI / 180);
+      						_ctx.beginPath();
+      						if(spaceship.power > 60){
+      							_ctx.strokeStyle = POWERBAR_COLOR_GOOD;
+      						} else if(spaceship.power <= 60 && spaceship.power >= 20){
+      							_ctx.strokeStyle = POWERBAR_COLOR_MEDIUM;
+      						} else {
+      							_ctx.strokeStyle = POWERBAR_COLOR_BAD;
+      						}
+      						_ctx.lineWidth = POWERBAR_WIDTH;
+      						_ctx.moveTo(spaceship.orbit,-POWERBAR_POS_OFFSET);
+      						_ctx.lineTo(spaceship.orbit + SPACESHIP_SIZE * (spaceship.power / 100),-POWERBAR_POS_OFFSET);
+      						_ctx.stroke();
+      						_ctx.drawImage(spaceshipImg,spaceship.orbit,0,SPACESHIP_SIZE,SPACESHIP_SIZE);
+      						_ctx.restore();
+      						ctx.clearRect(0,0,SCREEN_WIDTH,SCREEN_HEIGHT);
+      						ctx.drawImage(cacheCanvas,0,0,SCREEN_WIDTH,SCREEN_HEIGHT);
+      						return false;
+      					} catch (error) {
+      						return false;
+      					}
+      				};
+      			};
+      			var onDraw = function(spaceships){
+      				if(!(spaceships === undefined || spaceships.every(function(item,index,array){
+      					return item === undefined;
+      				}))){
+      					cacheCtx.clearRect(0,0,SCREEN_WIDTH,SCREEN_HEIGHT);
+      					for(var i = 0;i<spaceships.length;i++){
+      						  
+      							drawSpaceship(cacheCtx,spaceships[i]);
+      						
+      					}
+      				} else{
+      					ctx.clearRect(0,0,SCREEN_WIDTH,SCREEN_HEIGHT);
+      				}
+      			};
+      			var animLoop = function(){
+      				
+      				requestAnimationFrame(animLoop);
+      				onDraw(mediator.getSpaceships());
+      			};
+      	        var setMediator = function(_mediator) {
+                      mediator = _mediator;
+                };
+      			return {
+      				setMediator : setMediator,
+      				animLoop     : animLoop
+      			};
+      		})();
+            var buttonHandler = function(commander){
+                var id  = null;
+                var cmd = null;
+                $('.btn').on('click',function(){
+                	var cmdName = $(this).attr('name');
+                	switch (cmdName){
+                		case 'luanch':
+                		case 'fly':
+                		case 'stop':
+                		case 'destroy':
+	                		id = $(this).parent().index();
+	                		cmd = cmdName;
+
+	                		break;
+	                    default:
+	                    alert('invalid command!');
+	                    return false;
+                	}
+                	var message = new Message(id,cmd);
+                	commander.send(message);
+                	return true;
+                });
+            };
+            var Commander = function(){
+            	this.id = 'Don';
+            	this.cmds = [];
+            	this.mediator = null;
+            };
+            Commander.prototype.send = function(msg){
+            	this.mediator.send(msg);
+            	this.cmds.push(msg);
+            };
+            var Message = function(target,command){
+            	this.id  = target;
+            	this.cmd = command;
+            };
+            var Mediator = function (){
+            	var spaceships = [];
+            	var commander = null;
+            	return {
+            		register : function(obj){
+            			if(obj instanceof Commander){
+            				commander = obj;
+            				obj.mediator = this;
+            				
+            				ConsoleUtil.show('mediator register' + 'Commander' + obj.id);
+            				return true;
+            			} else if(obj instanceof Spaceship){
+            				spaceships[obj.id] = obj;
+            				obj.mediator = this;
+            				ConsoleUtil.show('mediator register' + 'Spaceship' + obj.id);
+            				return true;
+            			}
+            			ConsoleUtil.show('mediator register failed');
+            			return false;
+            		},
+            		send : function(msg,from,to){
+            			var self = this;
+            			setTimeout(function(){
+            				var success = Math.random() >FAILURE_RATE ? true : false;
+            				if(success){
+            					if(to){
+            						to.receive(msg,from);
+            					} else {
+            						if(msg.cmd == 'luanch'){
+            							self.create(msg);
+            						}
+            						for(var key in spaceships){
+                                       if(spaceships[key] !== from){
+
+                                       	spaceships[key].signalManager().receive(msg,from);
+                                       }
+            						}
+            					}
+            					ConsoleUtil.show('send success');
+            					return true;
+            				} else{
+            					ConsoleUtil.show('send failed');
+            					return false;
+            				}
+            			},1000);
+            		},
+            		remove : function(obj){
+            			if(obj instanceof Spaceship){
+            				ConsoleUtil.show('destroy spaceship No.' + obj.id);
+            				delete spaceships[obj.id];
+            				return true;
+            			}
+            			ConsoleUtil.show('mediator remove failed');
+            			return false;
+            		},
+            		create : function(msg){
+            			if(spaceships[msg.id] !== undefined){
+            				ConsoleUtil.show('spaceship already exists');
+            				return false;
+            			}
+            			var spaceship = new Spaceship(msg.id);
+            			this.register(spaceship);
+            			return true;
+            		},
+            		getSpaceships : function(){
+            			return spaceships;
+            		}
+            	};
+            };
+            var ConsoleUtil = (function(){
+            	var $consoleLog = $('#console ul');
+            	var show = function(msg){
+            		var $msg = $('<li></li>');
+            		$msg.text(msg);
+            		$consoleLog.prepend($msg);
+            	};
+            	return {
+            		show : show
+            	};
+            })();
+            window.onload = function(){
+            	var commander = new Commander();
+            	
+            	var mediator  = new Mediator();console.log(mediator);
+            	mediator.register(commander);
+            	buttonHandler(commander);
+            	AnimUtil.setMediator(mediator);
+            	AnimUtil.animLoop();
+
+            };
+      	})();
+      </script>
+</body>
+</html>
