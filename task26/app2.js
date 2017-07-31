@@ -26,8 +26,8 @@
     var POWERBAR_COLOR_BAD = "#fb0000"; //电量差状态颜色
     var POWERBAR_WIDTH = 5; //电量条宽度
 
-    var SCREEN_WIDTH = 800; //屏幕宽度
-    var SCREEN_HEIGHT = 800; //屏幕高度
+    var SCREEN_WIDTH = 500; //屏幕宽度
+    var SCREEN_HEIGHT = 500; //屏幕高度
     var SCREEN_CENTER_X = SCREEN_WIDTH / 2; //屏幕X轴中心坐标
     var SCREEN_CENTER_Y = SCREEN_HEIGHT / 2; //屏幕Y轴中心坐标
 
@@ -187,7 +187,7 @@
      */
     var Commander = function() {
         this.id = "Don";
-        //this.cmds = [];
+        this.cmds = [];
         this.mediator = null;
     };
 
@@ -509,7 +509,6 @@
             $msg.text(msg);
             $consoleLog.prepend($msg);
         };
-
         return {
             show: show
         };
