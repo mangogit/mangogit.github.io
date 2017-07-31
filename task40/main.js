@@ -1,1 +1,0 @@
-new DatePicker($('#container'));
